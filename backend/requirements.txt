@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 fastapi==0.115.0
 uvicorn==0.30.1
 sqlalchemy==2.0.31
 pydantic==2.9.2
+=======
+fastapi==0.111.0
+uvicorn==0.30.1
+sqlalchemy==2.0.31
+pydantic==2.7.4
+>>>>>>> 6016cfaba9ca869cf3a15c4c25f99ebcc7b552f5
 passlib[bcrypt]==1.7.4
 pyjwt[crypto]==2.8.0
 pytest==8.2.2
