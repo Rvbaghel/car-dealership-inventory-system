@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.config import Base
 
 # =====================================================================
-# 1. DATABASE ENTITY (The Java JPA @Entity equivalent)
+# 1. DATABASE ENTITY 
 # =====================================================================
 class UserEntity(Base):
     __tablename__ = "users"
@@ -15,21 +15,18 @@ class UserEntity(Base):
 
 
 # =====================================================================
-# 2. DTO SCHEMAS (The Java Request/Response DTO equivalents)
+# 2. DTO SCHEMAS (Modernized to Pydantic V2)
 # =====================================================================
 
 class UserRegisterRequest(BaseModel):
-    """Java Equivalent: UserRegisterRequestDTO. Handles incoming request body validation."""
     username: str
     email: str
     password: str
 
 class UserResponse(BaseModel):
-    """Java Equivalent: UserResponseDTO. Filters out sensitive fields before returning JSON."""
     id: int
     username: str
     email: str
 
-    # Tells Pydantic to read standard ORM/SQLAlchemy objects smoothly
-    class Config:
-        from_attributes = True
+    # Modern Pydantic V2 way to read standard ORM objects cleanly without warnings
+    model_config = ConfigDict(from_attributes=True)

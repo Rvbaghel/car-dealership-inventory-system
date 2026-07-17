@@ -4,39 +4,52 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 
-# 1. Import your main application instance (Like importing your @SpringBootApplication class)
 from app.main import app
+from app.config import Base, get_db  # Import our schema base metadata and real dependency hook
 
-# 2. Configure an isolated, temporary, in-memory SQLite URL
+# 1. Configure our isolated, temporary, in-memory SQLite URL
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
-# 3. Create the Database Engine (Like creating a DataSource bean in Java)
+# 2. Setup the test engine with StaticPool to keep the memory connection persistent
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}, # Required for SQLite to run across threads
-    poolclass=StaticPool,                       # Keeps the in-memory DB alive in a single connection pool
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 
-# 4. Create a Session Factory (Like configuring your Hibernate/JPA EntityManagerFactory)
+# 3. Create our session factory
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="function")
 def db_session():
-    """
-    Java Equivalent: A helper method that opens a Hibernate Session/EntityManager,
-    injects it into a test, and closes/rolls it back after the test completes.
-    """
+    """Provides an isolated, clean memory database instance per test run execution."""
+    # Build schema maps directly inside our temporary memory container
+    Base.metadata.create_all(bind=engine)
+    
     session = TestingSessionLocal()
     try:
-        yield session # This delivers the DB session to whoever requests it
+        yield session
     finally:
-        session.close() # Clean up when the test finishes (Ensures isolation)
+        session.close()
+        # Drop the structures entirely when done so no dirty records cross over
+        Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="function")
 def client(db_session):
-    """
-    Java Equivalent: Configuring a MockMvc instance to perform HTTP requests.
-    """
-    # Using 'with' acts like a try-with-resources block in Java
+    """Java Equivalent: MockMvc container utilizing explicit database bean overrides."""
+    
+    # 4. Create an override helper function that catches endpoints requesting get_db
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    # 5. Inject the mock session directly into the FastAPI application bean mapping
+    app.dependency_overrides[get_db] = override_get_db
+    
     with TestClient(app) as test_client:
         yield test_client
+        
+    # 6. Clear overrides after the test finishes to preserve production behavior
+    app.dependency_overrides.clear()

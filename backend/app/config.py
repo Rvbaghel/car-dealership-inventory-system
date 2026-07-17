@@ -1,26 +1,23 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# 1. Database file path (Will create a local file named local_dealership.db)
+# 1. Database file path
 DATABASE_URL = "sqlite:///./local_dealership.db"
 
-# 2. Setup the engine (Like configuring your HikariCP Data Source)
+# 2. Setup the engine
 engine = create_engine(
     DATABASE_URL, 
-    connect_args={"check_same_thread": False}  # Needed only for SQLite multi-threading
+    connect_args={"check_same_thread": False}
 )
 
-# 3. Create SessionLocal factory (Like configuring a JPA EntityManager)
+# 3. Create SessionLocal factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# 4. Create the declarative Base class (Like Spring Boot's JPA / Hibernate Base Entity class)
+# 4. Create the declarative Base class
 Base = declarative_base()
 
 def get_db():
-    """
-    Java Equivalent: Dependency Injection of the Entity Manager / Transaction Management.
-    Provides a database session context that auto-closes once the request finishes.
-    """
+    """Provides a transactional database session context per request."""
     db = SessionLocal()
     try:
         yield db
