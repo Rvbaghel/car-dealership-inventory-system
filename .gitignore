@@ -1,0 +1,15 @@
+# Python caches
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+.venv/
+
+# Local Database
+*.db
+backend/local_dealership.db
+
+# IDEs
+.vscode/
+.idea/
