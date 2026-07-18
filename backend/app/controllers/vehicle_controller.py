@@ -101,9 +101,9 @@ def update_vehicle(
     vehicle_id: int,
     request: VehicleCreateRequest,
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None, alias="Authorization")  # Fixed tracking alias mapping
+    authorization: Optional[str] = Header(None, alias="Authorization")
 ):
-    """Happy Path Entrypoint: Updates an existing vehicle resource's tracking details."""
+    """Happy Path Entrypoint: Updates an existing vehicle resource's tracking details (ADMIN Only)."""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
@@ -111,12 +111,22 @@ def update_vehicle(
         )
     
     token = authorization.split(" ")[1]
-    SecurityUtils.verify_access_token(token)
+    # Decode payload to parse role permissions securely
+    payload = SecurityUtils.verify_access_token(token)
+    
+    # Secure role verification block
+    if payload.get("role") != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrative privileges required to update inventory items"
+        )
 
+    # Search for the vehicle in the database
     db_vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not db_vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
+    # Mutate the resource state attributes
     db_vehicle.make = request.make
     db_vehicle.model = request.model
     db_vehicle.category = request.category
