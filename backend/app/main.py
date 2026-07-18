@@ -5,7 +5,7 @@ from app.config import engine, Base, SessionLocal
 from app.controllers import auth_controller
 from app.entities.user_entity import UserEntity
 from app.security.jwt_handler import SecurityUtils
-
+from app.controllers.vehicle_controller import router as vehicle_router
 def seed_admin_user():
     db = SessionLocal()
     try:
@@ -43,7 +43,7 @@ app = FastAPI(
 )
 
 app.include_router(auth_controller.router)
-
+app.include_router(vehicle_router)
 @app.get("/")
 def read_root():
     return {"message": "Hello World - Car Dealership Inventory API is Live!"}
