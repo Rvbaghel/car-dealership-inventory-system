@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta, timezone
-import bcrypt  # Direct native library instead of passlib
+import bcrypt
+from fastapi import HTTPException  # Direct native library instead of passlib
 import jwt
 from dotenv import load_dotenv
 
@@ -60,3 +61,24 @@ class SecurityUtils:
         }
         
         return jwt.encode(payload, SecurityUtils.SECRET_KEY, algorithm=SecurityUtils.ALGORITHM)
+    
+    @staticmethod
+    def verify_access_token(token: str) -> dict:
+        """
+        Decodes and verifies a JWT token against our secret signature key.
+        Returns the payload claims dictionary if valid, or raises an exception.
+        """
+        try:
+            # jwt.decode automatically validates expiration time ('exp') internally!
+            payload = jwt.decode(token, SecurityUtils.SECRET_KEY, algorithms=[SecurityUtils.ALGORITHM])
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(
+                status_code=401,
+                detail="Token has expired"
+            )
+        except jwt.InvalidTokenError:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid authentication token"
+            )

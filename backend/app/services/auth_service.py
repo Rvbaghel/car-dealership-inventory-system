@@ -48,3 +48,4 @@ class AuthService:
             "token_type": "bearer",
             "role": user.role
         }
+    
