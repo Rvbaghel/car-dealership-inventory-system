@@ -1,15 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from sqlalchemy import text  # Standard SQL wrapper to target internal tables
 from app.config import engine, Base, SessionLocal
 from app.controllers import auth_controller
 from app.entities.user_entity import UserEntity
 from app.security.jwt_handler import SecurityUtils
 
-# Java Equivalent: DatabaseInitializer seeding critical production beans on system container creation
 def seed_admin_user():
     db = SessionLocal()
     try:
-        # Check if the core admin identity profile exists in storage layers
         admin_email = "admin@dealership.com"
         admin = db.query(UserEntity).filter(UserEntity.email == admin_email).first()
         
@@ -19,7 +18,7 @@ def seed_admin_user():
                 username="admin",
                 email=admin_email,
                 hashed_password=hashed_pass,
-                role="ADMIN"  # Elevate permissions explicitly to Admin role status
+                role="ADMIN"
             )
             db.add(admin_user)
             db.commit()
@@ -28,9 +27,20 @@ def seed_admin_user():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure tables are built
+    # 1. Force drop the stale table from the inside to blow past the Windows file lock
+    db = SessionLocal()
+    try:
+        db.execute(text("DROP TABLE IF EXISTS users;"))
+        db.commit()
+    except Exception:
+        pass
+    finally:
+        db.close()
+
+    # 2. Re-create the database structures fresh with the updated user.role columns mapped
     Base.metadata.create_all(bind=engine)
-    # Execute database migration/seeding profiles
+    
+    # 3. Seed the admin profile securely
     seed_admin_user()
     yield
 
