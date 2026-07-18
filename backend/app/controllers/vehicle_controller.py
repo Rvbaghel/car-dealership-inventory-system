@@ -119,3 +119,38 @@ def update_vehicle(
     db.commit()
     db.refresh(db_vehicle)
     return db_vehicle
+
+
+@router.delete("/{vehicle_id}", status_code=status.HTTP_200_OK)
+def delete_vehicle(
+    vehicle_id: int,
+    db: Session = Depends(get_db),
+    authorization: str = Header(None)
+):
+    """Happy Path Entrypoint: Verifies administrative claims and purges a vehicle."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Missing or invalid Authorization header structural format"
+        )
+    
+    token = authorization.split(" ")[1]
+    # Decode payload map tracking credentials securely
+    payload = SecurityUtils.verify_access_token(token)
+    
+    # Restrict operations to ADMIN role explicitly
+    if payload.get("role") != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrative privileges required to perform this action"
+        )
+
+    # Search and remove the targeted data row
+    db_vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not db_vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    db.delete(db_vehicle)
+    db.commit()
+    
+    return {"message": "Vehicle deleted successfully"}
