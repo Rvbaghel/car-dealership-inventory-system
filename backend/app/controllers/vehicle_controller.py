@@ -86,3 +86,36 @@ def search_vehicles(
         query = query.filter(Vehicle.price <= max_price)
 
     return query.all()
+
+@router.put("/{vehicle_id}", status_code=status.HTTP_200_OK)
+def update_vehicle(
+    vehicle_id: int,
+    request: VehicleCreateRequest,
+    db: Session = Depends(get_db),
+    authorization: str = Header(None)
+):
+    """Happy Path Entrypoint: Updates an existing vehicle resource's tracking details."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Missing or invalid Authorization header structural format"
+        )
+    
+    token = authorization.split(" ")[1]
+    SecurityUtils.verify_access_token(token)
+
+    # Search for the vehicle in the database
+    db_vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not db_vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
+    # Mutate the resource state attributes
+    db_vehicle.make = request.make
+    db_vehicle.model = request.model
+    db_vehicle.category = request.category
+    db_vehicle.price = request.price
+    db_vehicle.quantity = request.quantity
+
+    db.commit()
+    db.refresh(db_vehicle)
+    return db_vehicle

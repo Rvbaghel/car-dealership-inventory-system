@@ -65,3 +65,37 @@ def test_search_vehicles_by_make_success(client, user_token):
     assert isinstance(data, list)
     assert len(data) > 0
     assert data[0]["make"] == "Toyota"
+
+
+def test_update_vehicle_details_success(client, user_token):
+    """Happy Path: An authenticated user can successfully update an existing vehicle's data details."""
+    headers = {"Authorization": f"Bearer {user_token}"}
+    
+    # Arrange: Seed an initial vehicle to obtain a persistent record ID
+    initial_payload = {
+        "make": "Honda",
+        "model": "Civic",
+        "category": "Sedan",
+        "price": 25000.0,
+        "quantity": 10
+    }
+    create_resp = client.post("/api/vehicles", json=initial_payload, headers=headers)
+    vehicle_id = create_resp.json()["id"]
+
+    # Act: Send the updated payload parameters via PUT
+    update_payload = {
+        "make": "Honda",
+        "model": "Civic Hatchback",  # Changing the model
+        "category": "Sedan",
+        "price": 27000.0,            # Changing the price
+        "quantity": 8                # Changing the stock quantity
+    }
+    response = client.put(f"/api/vehicles/{vehicle_id}", json=update_payload, headers=headers)
+    
+    # Assert: Verify database status and payload structural return update values
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == vehicle_id
+    assert data["model"] == "Civic Hatchback"
+    assert data["price"] == 27000.0
+    assert data["quantity"] == 8   
