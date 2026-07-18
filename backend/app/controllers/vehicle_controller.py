@@ -31,3 +31,19 @@ def create_vehicle(request: VehicleCreateRequest, db: Session = Depends(get_db),
     db.commit()
     db.refresh(db_vehicle)
     return db_vehicle
+
+@router.get("", status_code=status.HTTP_200_OK)
+def get_all_vehicles(db: Session = Depends(get_db), authorization: str = Header(None)):
+    """Happy Path Entrypoint: Verifies structural token layout and fetches all vehicles."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Missing or invalid Authorization header structural format"
+        )
+    
+    token = authorization.split(" ")[1]
+    SecurityUtils.verify_access_token(token)
+
+    # Fetch all items matching our database vehicle entity definition
+    vehicles = db.query(Vehicle).all()
+    return vehicles
