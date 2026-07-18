@@ -108,7 +108,7 @@ def admin_token():
     """Generates a cryptographically signed JWT containing the ADMIN role claim."""
     # Correct positional signature layout: user_id="1", role="ADMIN"
     return SecurityUtils.generate_access_token("1", "ADMIN")
-
+#
 # =============================================================================
 
 def test_delete_vehicle_by_admin_success(client, admin_token, user_token):
