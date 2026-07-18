@@ -5,7 +5,7 @@ from app.repositories.user_repository import UserRepository
 from app.security.jwt_handler import SecurityUtils
 
 class AuthService:
-    """Java Equivalent: AuthService implementation handling credential validation and user creation."""
+    """Java Equivalent: AuthService handling credential validation, profile registration, and token generation."""
 
     @staticmethod
     def register_user(request: UserRegisterRequest, db: Session) -> UserEntity:
@@ -22,14 +22,14 @@ class AuthService:
             username=request.username,
             email=request.email,
             hashed_password=secure_hashed_password,
-            role="USER"  # Standard registrations are always assigned standard customer roles
+            role="USER"
         )
 
         return user_repo.save(new_user)
 
     @staticmethod
     def authenticate_user(request: UserLoginRequest, db: Session) -> dict:
-        """Verifies credentials against persistent records and returns user profile details along with roles."""
+        """Verifies credentials and issues a secure signed JWT access token upon success."""
         user_repo = UserRepository(db)
         user = user_repo.find_by_email(request.email)
 
@@ -39,8 +39,12 @@ class AuthService:
                 detail="Invalid email or password"
             )
 
+        # Generate our secure 30-minute JWT token payload
+        access_token = SecurityUtils.generate_access_token(user_id=user.id, role=user.role)
+
+        # Return compliance dictionary structure
         return {
-            "message": "Login successful", 
-            "username": user.username,
-            "role": user.role  # Expose assigned role claims
+            "access_token": access_token,
+            "token_type": "bearer",
+            "role": user.role
         }

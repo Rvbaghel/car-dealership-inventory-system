@@ -129,10 +129,12 @@ def test_admin_account_is_automatically_seeded_on_startup(client):
     # Assert: Verification of administrative credential profile existence and claims
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "Login successful"
-    assert data["username"] == "admin"
+    
+    # Assert against the updated JWT token layout contract
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"
     assert data["role"] == "ADMIN"
-
+    
 def test_regular_user_login_returns_user_role(client):
     """Happy Path: Standard registration workflows must default profiles to the USER role."""
     # 1. Arrange: Register a normal customer profile

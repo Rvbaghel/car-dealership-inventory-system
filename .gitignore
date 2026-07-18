@@ -1,4 +1,7 @@
 # Python caches
+# Ignore local environment configuration secrets
+.env
+
 __pycache__/
 *.pyc
 
