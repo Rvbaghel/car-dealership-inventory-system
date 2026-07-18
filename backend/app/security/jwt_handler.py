@@ -1,3 +1,4 @@
+import re
 import bcrypt
 
 class SecurityUtils:
@@ -6,11 +7,9 @@ class SecurityUtils:
     @staticmethod
     def hash_password(password: str) -> str:
         """Hashes plain text password using strong Bcrypt salting."""
-        # Convert text string to UTF-8 bytes, generate a fresh salt, and hash it
         password_bytes = password.encode('utf-8')
         salt = bcrypt.gensalt()
         hashed_bytes = bcrypt.hashpw(password_bytes, salt)
-        # Decode bytes back to a standard string format to store nicely in SQLite
         return hashed_bytes.decode('utf-8')
 
     @staticmethod
@@ -19,5 +18,19 @@ class SecurityUtils:
         password_bytes = plain_password.encode('utf-8')
         hashed_bytes = hashed_password.encode('utf-8')
         return bcrypt.checkpw(password_bytes, hashed_bytes)
-    
-    
+
+    @staticmethod
+    def is_strong_password(password: str) -> bool:
+        """
+        Business Rule Verification:
+        Enforces 1 Uppercase, 1 Lowercase, 1 Digit, and 1 Special Character.
+        """
+        if not re.search(r"[A-Z]", password):
+            return False
+        if not re.search(r"[a-z]", password):
+            return False
+        if not re.search(r"\d", password):
+            return False
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            return False
+        return True
