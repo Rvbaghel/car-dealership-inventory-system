@@ -27,20 +27,11 @@ def seed_admin_user():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 1. Force drop the stale table from the inside to blow past the Windows file lock
-    db = SessionLocal()
-    try:
-        db.execute(text("DROP TABLE IF EXISTS users;"))
-        db.commit()
-    except Exception:
-        pass
-    finally:
-        db.close()
-
-    # 2. Re-create the database structures fresh with the updated user.role columns mapped
+    
+   # Generates all missing tables and columns cleanly on startup
     Base.metadata.create_all(bind=engine)
     
-    # 3. Seed the admin profile securely
+    # Executes database seeding routines
     seed_admin_user()
     yield
 

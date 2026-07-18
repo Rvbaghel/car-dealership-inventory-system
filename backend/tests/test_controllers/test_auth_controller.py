@@ -58,27 +58,33 @@ def test_register_weak_password_fails(client):
 
 #login features 
 def test_login_user_success(client):
-    """Happy Path: Submitting valid credentials must return 200 OK and user details."""
-    # 1. Arrange: Register a user first
+    """Happy Path: Submitting valid credentials must return 200 OK and a valid JWT bearer token structure."""
+    # 1. Arrange: Register a fresh user first
     setup_payload = {
-        "username": "logintest",
-        "email": "logintest@example.com",
+        "username": "jwtbuyer",
+        "email": "jwtbuyer@example.com",
         "password": "SecurePassword123!"
     }
     client.post("/api/auth/register", json=setup_payload)
 
     # 2. Act: Attempt login with correct credentials
     login_payload = {
-        "email": "logintest@example.com",
+        "email": "jwtbuyer@example.com",
         "password": "SecurePassword123!"
     }
     response = client.post("/api/auth/login", json=login_payload)
 
-    # 3. Assert: Verify the response matches our design contract
+    # 3. Assert: Verify the response matches our production JWT contract layout
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "Login successful"
-    assert data["username"] == "logintest"
+    
+    # Enforce standard OAuth2/JWT response keys
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"
+    
+    # Verify metadata tracking fields are returned
+    assert "role" in data
+    assert data["role"] == "USER"
 
 def test_login_invalid_password_fails(client):
     """Security Failure: Submitting a wrong password must return 401 Unauthorized."""
