@@ -1,4 +1,5 @@
 import pytest
+from app.security.jwt_handler import SecurityUtils
 
 @pytest.fixture
 def user_token(client):
@@ -98,4 +99,37 @@ def test_update_vehicle_details_success(client, user_token):
     assert data["id"] == vehicle_id
     assert data["model"] == "Civic Hatchback"
     assert data["price"] == 27000.0
-    assert data["quantity"] == 8   
+    assert data["quantity"] == 8 
+
+
+# Add this fixture at the top of your test file if it's not already there!
+@pytest.fixture
+def admin_token():
+    """Generates a cryptographically signed JWT containing the ADMIN role claim."""
+    # Correct positional signature layout: user_id="1", role="ADMIN"
+    return SecurityUtils.generate_access_token("1", "ADMIN")
+
+# =============================================================================
+
+def test_delete_vehicle_by_admin_success(client, admin_token, user_token):
+    """Happy Path: An authenticated user with an ADMIN role can successfully delete a vehicle."""
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    user_headers = {"Authorization": f"Bearer {user_token}"}
+    
+    # Arrange: Seed a vehicle using our standard user headers
+    initial_payload = {
+        "make": "Ford",
+        "model": "Mustang",
+        "category": "Coupe",
+        "price": 45000.0,
+        "quantity": 3
+    }
+    create_resp = client.post("/api/vehicles", json=initial_payload, headers=user_headers)
+    vehicle_id = create_resp.json()["id"]
+
+    # Act: Send the DELETE request using our Admin credentials
+    response = client.delete(f"/api/vehicles/{vehicle_id}", headers=admin_headers)
+    
+    # Assert: Verify that the endpoint returns a 200 OK status code
+    assert response.status_code == 200
+    assert response.json()["message"] == "Vehicle deleted successfully"
