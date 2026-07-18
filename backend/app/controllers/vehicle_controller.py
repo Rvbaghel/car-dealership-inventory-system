@@ -165,5 +165,5 @@ def delete_vehicle(
 
     db.delete(db_vehicle)
     db.commit()
-    
+    #return message
     return {"message": "Vehicle deleted successfully"}
