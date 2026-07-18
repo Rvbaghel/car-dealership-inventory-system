@@ -30,3 +30,14 @@ def test_create_vehicle_success(client, user_token):
     assert data["id"] is not None
     assert data["make"] == "Toyota"
     assert data["quantity"] == 5
+
+
+def test_get_all_vehicles_success(client, user_token):
+    """Happy Path: An authenticated user can successfully fetch the list of all available inventory items."""
+    # Act: Send a GET request with our verified token format
+    headers = {"Authorization": f"Bearer {user_token}"}
+    response = client.get("/api/vehicles", headers=headers)
+    
+    # Assert: Verify that the endpoint returns a valid array format
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
