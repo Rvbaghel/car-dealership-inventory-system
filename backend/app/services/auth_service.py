@@ -1,35 +1,49 @@
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+from app.entities.user_entity import UserEntity, UserRegisterRequest, UserLoginRequest
 from app.repositories.user_repository import UserRepository
-from app.entities.user_entity import UserEntity, UserRegisterRequest, UserResponse
-from app.security.jwt_handler import SecurityUtils  # 1. Import security helper
+from app.security.jwt_handler import SecurityUtils
 
 class AuthService:
-    """Java Equivalent: @Service class handling core authentication business validation rules."""
-    
-    def __init__(self, user_repo: UserRepository):
-        self.user_repo = user_repo
+    """Java Equivalent: AuthService implementation handling credential validation and user creation."""
 
-    def register_user(self, request: UserRegisterRequest) -> UserResponse:
-        if self.user_repo.find_by_username(request.username):
+    @staticmethod
+    def register_user(request: UserRegisterRequest, db: Session) -> UserEntity:
+        user_repo = UserRepository(db)
+
+        if user_repo.find_by_username(request.username):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already exists"
             )
-            
-        if self.user_repo.find_by_email(request.email):
+        
+        if user_repo.find_by_email(request.email):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already exists"
             )
 
-        # 2. Refactored: Encrypt the plain text password securely using Bcrypt
         secure_hashed_password = SecurityUtils.hash_password(request.password)
 
         new_user = UserEntity(
             username=request.username,
             email=request.email,
-            hashed_password=secure_hashed_password  # Store the secure hash string!
+            hashed_password=secure_hashed_password
         )
 
-        saved_user = self.user_repo.save(new_user)
-        return UserResponse.model_validate(saved_user)
+        return user_repo.save(new_user)
+
+    @staticmethod
+    def authenticate_user(request: UserLoginRequest, db: Session) -> dict:
+        """Verifies credentials against persistent records without JWT layers."""
+        user_repo = UserRepository(db)
+        user = user_repo.find_by_email(request.email)
+
+        # Security Best Practice: Use identical error messaging to prevent user enumeration
+        if not user or not SecurityUtils.verify_password(request.password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password"
+            )
+
+        return {"message": "Login successful", "username": user.username}

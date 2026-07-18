@@ -15,6 +15,7 @@ class UserEntity(Base):
     hashed_password = Column(String, nullable=False)
 
 
+
 # =====================================================================
 # 2. DTO SCHEMAS
 # =====================================================================
@@ -40,3 +41,7 @@ class UserResponse(BaseModel):
     email: str
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserLoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1)
