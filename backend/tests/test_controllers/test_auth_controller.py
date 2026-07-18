@@ -110,3 +110,41 @@ def test_login_nonexistent_user_fails(client):
     response = client.post("/api/auth/login", json=login_payload)
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid email or password"
+
+def test_admin_account_is_automatically_seeded_on_startup(client):
+    """System Verification: The application lifecycle context must auto-seed the default admin account."""
+    # Act: Attempt to log in immediately with the default seeded admin credentials
+    admin_login_payload = {
+        "email": "admin@dealership.com",
+        "password": "SuperSecureAdminPassword123!"
+    }
+    response = client.post("/api/auth/login", json=admin_login_payload)
+
+    # Assert: Verification of administrative credential profile existence and claims
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "Login successful"
+    assert data["username"] == "admin"
+    assert data["role"] == "ADMIN"
+
+def test_regular_user_login_returns_user_role(client):
+    """Happy Path: Standard registration workflows must default profiles to the USER role."""
+    # 1. Arrange: Register a normal customer profile
+    setup_payload = {
+        "username": "customer1",
+        "email": "customer1@example.com",
+        "password": "SecurePassword123!"
+    }
+    client.post("/api/auth/register", json=setup_payload)
+
+    # 2. Act: Log in with the standard customer profile
+    login_payload = {
+        "email": "customer1@example.com",
+        "password": "SecurePassword123!"
+    }
+    response = client.post("/api/auth/login", json=login_payload)
+
+    # 3. Assert: Verify the role claims map to standard permissions
+    assert response.status_code == 200
+    data = response.json()
+    assert data["role"] == "USER"    
