@@ -55,3 +55,58 @@ def test_register_weak_password_fails(client):
         }
         response = client.post("/api/auth/register", json=payload)
         assert response.status_code == 422, f"Failed to catch weak password: {password}"
+
+#login features 
+def test_login_user_success(client):
+    """Happy Path: Submitting valid credentials must return 200 OK and user details."""
+    # 1. Arrange: Register a user first
+    setup_payload = {
+        "username": "logintest",
+        "email": "logintest@example.com",
+        "password": "SecurePassword123!"
+    }
+    client.post("/api/auth/register", json=setup_payload)
+
+    # 2. Act: Attempt login with correct credentials
+    login_payload = {
+        "email": "logintest@example.com",
+        "password": "SecurePassword123!"
+    }
+    response = client.post("/api/auth/login", json=login_payload)
+
+    # 3. Assert: Verify the response matches our design contract
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "Login successful"
+    assert data["username"] == "logintest"
+
+def test_login_invalid_password_fails(client):
+    """Security Failure: Submitting a wrong password must return 401 Unauthorized."""
+    # 1. Arrange: Register a user
+    setup_payload = {
+        "username": "wrongpassuser",
+        "email": "wrongpass@example.com",
+        "password": "SecurePassword123!"
+    }
+    client.post("/api/auth/register", json=setup_payload)
+
+    # 2. Act: Login with an incorrect password
+    bad_login_payload = {
+        "email": "wrongpass@example.com",
+        "password": "WrongPassword123!"
+    }
+    response = client.post("/api/auth/login", json=bad_login_payload)
+
+    # 3. Assert: Expect a clear authentication failure response
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid email or password"
+
+def test_login_nonexistent_user_fails(client):
+    """Security Failure: Attempting to login an email that doesn't exist must return 401."""
+    login_payload = {
+        "email": "nobody@example.com",
+        "password": "SecurePassword123!"
+    }
+    response = client.post("/api/auth/login", json=login_payload)
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid email or password"
