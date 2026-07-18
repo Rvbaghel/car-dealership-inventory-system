@@ -4,6 +4,8 @@ from app.config import get_db
 from app.entities.vehicle_entity import Vehicle, VehicleCreateRequest
 from app.security.jwt_handler import SecurityUtils
 
+from typing import Optional
+
 router = APIRouter(prefix="/api/vehicles", tags=["Vehicle Controller Layer"])
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -48,3 +50,39 @@ def get_all_vehicles(db: Session = Depends(get_db), authorization: str = Header(
     vehicles = db.query(Vehicle).all()
     return vehicles
 
+
+@router.get("/search", status_code=status.HTTP_200_OK)
+def search_vehicles(
+    make: Optional[str] = None,
+    model: Optional[str] = None,
+    category: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    db: Session = Depends(get_db),
+    authorization: str = Header(None)
+):
+    """Happy Path Entrypoint: Dynamic search filtering engine for vehicle inventory."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Missing or invalid Authorization header structural format"
+        )
+    
+    token = authorization.split(" ")[1]
+    SecurityUtils.verify_access_token(token)
+
+    # Begin assembling dynamic query filters sequentially
+    query = db.query(Vehicle)
+
+    if make:
+        query = query.filter(Vehicle.make.ilike(f"%{make}%"))
+    if model:
+        query = query.filter(Vehicle.model.ilike(f"%{model}%"))
+    if category:
+        query = query.filter(Vehicle.category.ilike(f"%{category}%"))
+    if min_price is not None:
+        query = query.filter(Vehicle.price >= min_price)
+    if max_price is not None:
+        query = query.filter(Vehicle.price <= max_price)
+
+    return query.all()

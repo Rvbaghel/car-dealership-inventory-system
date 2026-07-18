@@ -46,6 +46,16 @@ def test_search_vehicles_by_make_success(client, user_token):
     """Happy Path: An authenticated user can successfully filter vehicles by query parameters."""
     headers = {"Authorization": f"Bearer {user_token}"}
     
+    # Arrange: Seed a vehicle explicitly into this isolated transaction context
+    vehicle_payload = {
+        "make": "Toyota",
+        "model": "RAV4",
+        "category": "SUV",
+        "price": 32000.0,
+        "quantity": 5
+    }
+    client.post("/api/vehicles", json=vehicle_payload, headers=headers)
+    
     # Act: Request filtering for vehicles made by "Toyota"
     response = client.get("/api/vehicles/search?make=Toyota", headers=headers)
     
@@ -53,7 +63,5 @@ def test_search_vehicles_by_make_success(client, user_token):
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    # The vehicle we created in test #1 should show up here!
     assert len(data) > 0
     assert data[0]["make"] == "Toyota"
-
