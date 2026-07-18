@@ -41,3 +41,19 @@ def test_get_all_vehicles_success(client, user_token):
     # Assert: Verify that the endpoint returns a valid array format
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+def test_search_vehicles_by_make_success(client, user_token):
+    """Happy Path: An authenticated user can successfully filter vehicles by query parameters."""
+    headers = {"Authorization": f"Bearer {user_token}"}
+    
+    # Act: Request filtering for vehicles made by "Toyota"
+    response = client.get("/api/vehicles/search?make=Toyota", headers=headers)
+    
+    # Assert: Verify response matrix format and correct filter application
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    # The vehicle we created in test #1 should show up here!
+    assert len(data) > 0
+    assert data[0]["make"] == "Toyota"
+

@@ -47,3 +47,4 @@ def get_all_vehicles(db: Session = Depends(get_db), authorization: str = Header(
     # Fetch all items matching our database vehicle entity definition
     vehicles = db.query(Vehicle).all()
     return vehicles
+
