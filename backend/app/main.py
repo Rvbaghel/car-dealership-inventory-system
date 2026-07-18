@@ -1,14 +1,38 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.config import engine, Base
+from app.config import engine, Base, SessionLocal
 from app.controllers import auth_controller
+from app.entities.user_entity import UserEntity
+from app.security.jwt_handler import SecurityUtils
 
-# Java Equivalent: ApplicationContextInitializer handling schema population safely on startup
+# Java Equivalent: DatabaseInitializer seeding critical production beans on system container creation
+def seed_admin_user():
+    db = SessionLocal()
+    try:
+        # Check if the core admin identity profile exists in storage layers
+        admin_email = "admin@dealership.com"
+        admin = db.query(UserEntity).filter(UserEntity.email == admin_email).first()
+        
+        if not admin:
+            hashed_pass = SecurityUtils.hash_password("SuperSecureAdminPassword123!")
+            admin_user = UserEntity(
+                username="admin",
+                email=admin_email,
+                hashed_password=hashed_pass,
+                role="ADMIN"  # Elevate permissions explicitly to Admin role status
+            )
+            db.add(admin_user)
+            db.commit()
+    finally:
+        db.close()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Only creates physical tables if they don't exist yet on normal runtime launch
+    # Ensure tables are built
     Base.metadata.create_all(bind=engine)
-    yield  # Hand over control to the active application lifecycle context
+    # Execute database migration/seeding profiles
+    seed_admin_user()
+    yield
 
 app = FastAPI(
     title="Car Dealership Inventory System",
@@ -17,7 +41,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Mount the Authentication Controller Router into the app instance
 app.include_router(auth_controller.router)
 
 @app.get("/")

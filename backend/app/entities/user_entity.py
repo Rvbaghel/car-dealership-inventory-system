@@ -1,3 +1,4 @@
+import re
 from sqlalchemy import Column, Integer, String
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from app.config import Base
@@ -13,7 +14,7 @@ class UserEntity(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-
+    role = Column(String, default="USER", nullable=False)  # Enforces "USER" or "ADMIN" roles
 
 
 # =====================================================================
@@ -27,7 +28,6 @@ class UserRegisterRequest(BaseModel):
     @field_validator("password")
     @classmethod
     def validate_password_strength(cls, value: str) -> str:
-        """Delegates validation to centralized security rule utility."""
         if not SecurityUtils.is_strong_password(value):
             raise ValueError(
                 "Password must contain at least one uppercase letter, "
@@ -35,13 +35,14 @@ class UserRegisterRequest(BaseModel):
             )
         return value
 
+class UserLoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1)
+
 class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+    role: str  # Expose role metadata securely in responses
 
     model_config = ConfigDict(from_attributes=True)
-
-class UserLoginRequest(BaseModel):
-    email: EmailStr
-    password: str = Field(..., min_length=1)

@@ -5,9 +5,9 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 
 from app.main import app
-from app.config import Base, get_db  # Import our schema base metadata and real dependency hook
+from app.config import Base, get_db  # Imported get_db to fix NameError boundary crashes
 
-# 1. Configure our isolated, temporary, in-memory SQLite URL
+# 1. Configure our isolated, temporary, in-memory SQLite database
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 # 2. Setup the test engine with StaticPool to keep the memory connection persistent
@@ -17,13 +17,13 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 
-# 3. Create our session factory
+# 3. Create our isolated test session factory
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="function")
 def db_session():
     """Provides an isolated, clean memory database instance per test run execution."""
-    # Build schema maps directly inside our temporary memory container
+    # Build the required clean schema tables inside the memory engine context
     Base.metadata.create_all(bind=engine)
     
     session = TestingSessionLocal()
@@ -31,25 +31,35 @@ def db_session():
         yield session
     finally:
         session.close()
-        # Drop the structures entirely when done so no dirty records cross over
+        # Drop tables to guarantee complete isolation boundaries for the next execution pass
         Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="function")
 def client(db_session):
     """Java Equivalent: MockMvc container utilizing explicit database bean overrides."""
     
-    # 4. Create an override helper function that catches endpoints requesting get_db
+    # 4. Create an override helper function that redirects endpoints to the isolated test session
     def override_get_db():
         try:
             yield db_session
         finally:
             pass
 
-    # 5. Inject the mock session directly into the FastAPI application bean mapping
+    # 5. Inject the mock session directly into the FastAPI dependency container mapping
     app.dependency_overrides[get_db] = override_get_db
     
-    with TestClient(app) as test_client:
-        yield test_client
+    # 6. Override the global database session context factory so the seed function runs against memory
+    import app.main as main_module
+    original_session_local = main_module.SessionLocal
+    main_module.SessionLocal = TestingSessionLocal
+
+    try:
+        # Trigger the baseline startup admin seed step inside the active memory context
+        main_module.seed_admin_user()
         
-    # 6. Clear overrides after the test finishes to preserve production behavior
-    app.dependency_overrides.clear()
+        with TestClient(app) as test_client:
+            yield test_client
+    finally:
+        # Restore original production session factories and clear overrides
+        main_module.SessionLocal = original_session_local
+        app.dependency_overrides.clear()
