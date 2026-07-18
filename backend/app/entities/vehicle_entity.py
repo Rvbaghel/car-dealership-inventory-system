@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict  # Updated import
 from app.config import Base
 
 # SQLAlchemy Database Model Layer
@@ -15,11 +15,11 @@ class Vehicle(Base):
 
 # Pydantic Structural Contracts
 class VehicleCreateRequest(BaseModel):
+    # Enforce modern V2 configuration dictionary mapping style
+    model_config = ConfigDict(from_attributes=True)
+
     make: str
     model: str
     category: str
     price: float
     quantity: int
-
-    class Config:
-        from_attributes = True
