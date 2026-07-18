@@ -1,24 +1,57 @@
-def test_register_user_success(client):
-    
-    # 1. Arrange: Define the JSON request payload (Like an incoming RequestDTO)
-    registration_payload = {
-        "username": "testuser",
-        "email": "testuser@example.com",
-        "password": "SecurePassword123"
-    }
-    
-    # 2. Act: Send a POST request (Like mockMvc.perform(post("/api/auth/register")))
-    response = client.post("/api/auth/register", json=registration_payload)
-    
-    # 🛠️ MOCK DEBUGGER PRINT: This outputs the real error message to the terminal!
-    print("\n--- [BACKEND RAW RESPONSE BODY] ---")
-    print(response.json())
-    print("-----------------------------------\n")
+import pytest
 
-    # 3. Assert: Verify the response status and returned body (Like assertEquals / assertThat)
-    assert response.status_code == 201  # We expect a 201 Created status[cite: 1]
+def test_register_user_success(client):
+    """Happy Path: Standard registration workflow should return 201 Created."""
+    registration_payload = {
+        "username": "happyuser",
+        "email": "happyuser@example.com",
+        "password": "SecurePassword123!"
+    }
+    response = client.post("/api/auth/register", json=registration_payload)
+    assert response.status_code == 201
+    assert response.json()["username"] == "happyuser"
+
+def test_register_duplicate_username_fails(client):
+    """Business Constraint Rule: Registering an existing username must return 400 Bad Request."""
+    payload = {
+        "username": "duplicateuser",
+        "email": "user1@example.com",
+        "password": "Password123!"
+    }
+    # First registration passes
+    client.post("/api/auth/register", json=payload)
     
-    data = response.json()
-    # assert data["username"] == "testuser"
-    # assert data["email"] == "testuser@example.com"
-    # assert "id" in data                 # Verify an database primary key ID was assigned
+    # Second registration with identical username fails
+    payload["email"] = "user2@example.com"
+    response = client.post("/api/auth/register", json=payload)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Username already exists"
+
+def test_register_invalid_email_fails(client):
+    """Structural Schema Validation: Invalid email string formats must return 422 Unprocessable Entity."""
+    payload = {
+        "username": "emailtest",
+        "email": "invalid-email-format",
+        "password": "Password123!"
+    }
+    response = client.post("/api/auth/register", json=payload)
+    assert response.status_code == 422
+
+def test_register_weak_password_fails(client):
+    """Structural Schema Validation: Password missing criteria (min-length 6, upper, lower, digit, special) must return 422."""
+    bad_passwords = [
+        "short",          # Length under 6 characters
+        "nocapital123!",  # Missing uppercase letter
+        "NOLOWERCASE1!",  # Missing lowercase letter
+        "NoSpecialChar1", # Missing special character
+        "NoDigitsLetters!" # Missing numeric digit
+    ]
+    
+    for password in bad_passwords:
+        payload = {
+            "username": f"user_{password[:4]}",
+            "email": f"test_{password[:4]}@example.com",
+            "password": password
+        }
+        response = client.post("/api/auth/register", json=payload)
+        assert response.status_code == 422, f"Failed to catch weak password: {password}"
