@@ -14,7 +14,6 @@ confirms that the engine initialization is fully stable, outputting the expected
 I have created a Git commit to preserve our base data layer configurations."
 
 
-
 ## Prompt: Implementing the Data Access Repository Layer
 
 "I have successfully created the data access layer for user management inside `backend/app/repositories/user_repository.py`. This class replicates the Spring Data Repository pattern, providing direct interfaces for CRUD operations against our SQLite database
@@ -69,6 +68,62 @@ implementation."
 ## Prompt: Implementing Lifecycle Database Seeding & RBAC (TDD Green Phase)
 
 "I have implemented role-based permissions ('USER' and 'ADMIN') inside `backend/app/entities/user_entity.py` and structured an automatic data seeding routine within the `lifespan` manager of `backend/app/main.py`. By refactoring the test container framework in `backend/tests/conftest.py` to intercept and sandbox global factories, running `python -m pytest` now registers a flawless 9/9 passed test suite execution."
+
+## Prompt: Designing JWT Response Target Contracts (TDD Red Phase)
+
+"I have refactored the login integration test suite inside `backend/tests/test_controllers/test_auth_controller.py` to assert standard OAuth2/JWT attributes (`access_token` and `token_type`). Executing `python -m pytest` yielded the exact structural AssertionError target, establishing our secure authentication TDD Red phase baseline."
+
+
+## Prompt: Integrating Native Cryptographic Hashing & JWT Security (TDD Green Phase)
+
+"I have migrated our user management profile system away from legacy dependencies over to a native `bcrypt` library architecture to handle secure hashing boundaries. Additionally, I wired up environment variable tracking to guard system secret signing keys locally, and updated `AuthService.authenticate_user` to issue a signed 30-minute JSON Web Token. Rerunning `python -m pytest` yields a flawless 9/9 green success status."
+
+## Prompt: Verifying Live Production Token Decoding & Middleware Schemes
+
+"I have extended the cryptographic utilities with `verify_access_token` and constructed a protected `/api/auth/profile` controller path. Testing the endpoint inside Postman using the standard Bearer Token scheme successfully returned the parsed credentials dictionary (`user_id: 2`, `role: USER`), proving the production cryptographic runtime is operational."
+
+## Prompt: Vehicle Creation (TDD Red Phase - Test #1)
+
+"I have initialized the test suite file `backend/tests/test_controllers/test_vehicle_controller.py` with an isolated happy path assertion block for `POST /api/vehicles`. Executing the test runner yielded the expected `404 Not Found` baseline error matrix."
+
+## Prompt: Vehicle Creation Production Implementation (TDD Green Phase - Test #1)
+
+"I have wired up the declarative model structures inside `app/entities/vehicle_entity.py` and connected the `POST /api/vehicles` endpoint module back to the root FastAPI engine mapping. Rerunning our localized test harness passes cleanly, confirming the initial green lifecycle milestone."
+
+
+## Prompt: Vehicle Inventory Listing (TDD Red Phase - Test #2)
+
+"I have appended a happy path specification for `GET /api/vehicles` within `backend/tests/test_controllers/test_vehicle_controller.py`. Running the test runner against the suite successfully registered a `405 Method Not Allowed` error code baseline."
+
+
+## Prompt: Vehicle Inventory Listing Production Implementation (TDD Green Phase - Test #2)
+
+"I have introduced the data mapping logic for `GET /api/vehicles` within `app/controllers/vehicle_controller.py` to query all rows inside the vehicle entity table layout. Rerunning the test runner yields successful passing confirmations across the entire tracking suite."
+
+## Prompt: Vehicle Multi-Param Search Matrix (TDD Red Phase - Test #3)
+
+"I have appended a happy path specification for `GET /api/vehicles/search` within `backend/tests/test_controllers/test_vehicle_controller.py` to evaluate dynamic parameters (`?make=Toyota`). Running the test runner against the suite successfully registered a `404 Not Found` error code baseline."
+
+## Prompt: Vehicle Multi-Param Search Matrix Production Implementation (TDD Green Phase - Test #3)
+
+"I have introduced dynamic query building logic for `GET /api/vehicles/search` in `app/controllers/vehicle_controller.py` along with a localized database seed routine inside the test file. The suite passes completely with 3 green assertions."
+
+## Prompt: Vehicle Details Modification (TDD Red Phase - Test #4)
+
+"I have appended a happy path specification for `PUT /api/vehicles/:id` within `backend/tests/test_controllers/test_vehicle_controller.py` to evaluate resource attribute updates. Running the test runner against the suite successfully registered a `404 Not Found` error code baseline."
+
+## Prompt: Vehicle Details Modification Production Implementation (TDD Green Phase - Test #4)
+
+"I have introduced the persistence updating logic for `PUT /api/vehicles/:id` inside `app/controllers/vehicle_controller.py` to overwrite data records matching the unique primary key parameter. Rerunning the test runner yields 4 successfully passing assertions."
+
+## Prompt: Administrative Vehicle Deletion (TDD Red Phase - Test #5)
+
+"I have appended a happy path specification for `DELETE /api/vehicles/:id` within `backend/tests/test_controllers/test_vehicle_controller.py` executing requests under administrative access signatures. The target test execution returns a `405 Method Not Allowed` validation baseline."
+
+## Prompt: Administrative Vehicle Deletion Production Implementation (TDD Green Phase - Test #5)
+
+"I have introduced role authorization claim decoding logic for `DELETE /api/vehicles/:id` inside `app/controllers/vehicle_controller.py` to assert against the `ADMIN` criteria layout maps. Rerunning the test runner checks out cleanly with 5 passing metrics."
+
 
 
 
