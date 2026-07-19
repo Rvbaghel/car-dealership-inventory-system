@@ -1,4 +1,4 @@
-const BASE_URL = 'https://car-dealership-inventory-system-rouge.vercel.app';
+const BASE_URL = 'https://car-dealership-inventory-system-5qf.vercel.app';
 
 // Helper function to dynamically append authorization headers
 const getHeaders = (isJson = true) => {
