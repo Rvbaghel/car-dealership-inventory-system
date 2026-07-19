@@ -5,14 +5,11 @@ const VehicleModal = ({ isOpen, onClose, onSave, vehicle = null }) => {
   const [formData, setFormData] = useState({
     make: '',
     model: '',
-    year: new Date().getFullYear(),
+    category: '',
     price: '',
-    condition: 'New',
-    type: 'Sedan',
-    transmission: 'Automatic'
+    quantity: 1
   });
 
-  // Hydrate data if we are editing an existing vehicle record
   useEffect(() => {
     if (vehicle) {
       setFormData(vehicle);
@@ -20,11 +17,9 @@ const VehicleModal = ({ isOpen, onClose, onSave, vehicle = null }) => {
       setFormData({
         make: '',
         model: '',
-        year: new Date().getFullYear(),
+        category: '',
         price: '',
-        condition: 'New',
-        type: 'Sedan',
-        transmission: 'Automatic'
+        quantity: 1
       });
     }
   }, [vehicle, isOpen]);
@@ -64,7 +59,7 @@ const VehicleModal = ({ isOpen, onClose, onSave, vehicle = null }) => {
                 value={formData.make}
                 onChange={(e) => setFormData({ ...formData, make: e.target.value })}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="e.g., BMW, Tesla"
+                placeholder="e.g., Ford, Tesla"
               />
             </div>
             <div>
@@ -75,78 +70,51 @@ const VehicleModal = ({ isOpen, onClose, onSave, vehicle = null }) => {
                 value={formData.model}
                 onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="e.g., M4, Model 3"
+                placeholder="e.g., Explorer, Model S"
               />
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Category</label>
+            <input
+              type="text"
+              required
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="e.g., Sedan, SUV, Truck, Coupe"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Year</label>
-              <input
-                type="number"
-                required
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || '' })}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Price (USD)</label>
               <input
                 type="number"
                 required
                 min="0"
+                step="0.01"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || '' })}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="0.00"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 pt-2">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Condition</label>
-              <select
-                value={formData.condition}
-                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="New">New</option>
-                <option value="Used">Used</option>
-                <option value="Certified Pre-Owned">CPO</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Body Type</label>
-              <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="Sedan">Sedan</option>
-                <option value="SUV">SUV</option>
-                <option value="Truck">Truck</option>
-                <option value="Coupe">Coupe</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Gearbox</label>
-              <select
-                value={formData.transmission}
-                onChange={(e) => setFormData({ ...formData, transmission: e.target.value })}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="Automatic">Automatic</option>
-                <option value="Manual">Manual</option>
-              </select>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Quantity</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.quantity}
+                onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
             </div>
           </div>
 
-          {/* Action Footer Button Triggers */}
+          {/* Action Footer Buttons */}
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-5 mt-6">
             <button
               type="button"
