@@ -56,7 +56,8 @@ app.add_middleware(
     allow_origins=origins,           # Connects cleanly to our React client
     allow_credentials=True,
     allow_methods=["*"],             
-    allow_headers=["*"],             
+    allow_headers=["*"], 
+                
 )
 
 # 🟢 3. Mount all domain routing modules smoothly
