@@ -201,6 +201,9 @@ implementation."
 
 "I have refactored the database initialization configuration layers to extract hardcoded administrative seed passwords out of the codebase logic. Authentication profiles are now cleanly injected via an externalized `.env` file wrapper."
 
+## Prompt: Configure Multi-Engine Driver Support and Deploy Cloud Schema
+
+"I have refactored the database initialization layer to handle runtime context switching between SQLite local environments and live production Neon PostgreSQL instances. Automated seeding runs successfully instantiate tables directly in the cloud ecosystem."
 
 
 
