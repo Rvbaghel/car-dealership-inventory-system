@@ -41,3 +41,18 @@ def test_restock_vehicle_success_increases_quantity_as_admin(admin_client, test_
     
     # Verify the stock increments accurately in the returned JSON state
     assert data["quantity"] == initial_quantity + 5    
+
+
+def test_restock_vehicle_forbidden_for_regular_user(user_client, test_db_vehicle):
+    """
+    TDD Test 3 (RED): Enforces that a standard USER account is blocked from 
+    restocking and receives a 403 Forbidden status code.
+    """
+    vehicle_id = test_db_vehicle.id
+    restock_payload = {"quantity": 10}
+    
+    # We use user_client which provides a regular USER token
+    response = user_client.post(f"/api/vehicles/{vehicle_id}/restock", json=restock_payload)
+    
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()["detail"] == "Administrative privileges required to restock inventory"    
