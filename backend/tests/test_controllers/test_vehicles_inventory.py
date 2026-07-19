@@ -78,4 +78,18 @@ def test_purchase_vehicle_requires_authentication(client):
         json=purchase_payload, 
         headers=bad_headers
     )
-    assert response_bad_format.status_code == status.HTTP_401_UNAUTHORIZED        
+    assert response_bad_format.status_code == status.HTTP_401_UNAUTHORIZED   
+    
+def test_purchase_vehicle_insufficient_quantity(user_client, test_db_vehicle):
+    """
+    TDD Purchase Test 2 (RED): Enforces that attempting to purchase a quantity 
+    greater than the database stock pool returns a 400 Bad Request error.
+    """
+    vehicle_id = test_db_vehicle.id
+    # If the vehicle fixture quantity is 8, let's try to purchase 100
+    excess_purchase_payload = {"quantity": 100}
+    
+    response = user_client.post(f"/api/vehicles/{vehicle_id}/purchase", json=excess_purchase_payload)
+    
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()["detail"] == "Insufficient inventory stock available to complete purchase"         

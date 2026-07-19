@@ -10,6 +10,8 @@ router = APIRouter(prefix="/api/vehicles", tags=["Vehicle Controller Layer"])
 
 class VehicleRestockRequest(BaseModel):
     quantity: int
+class VehiclePurchaseRequest(BaseModel):
+    quantity: int
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_vehicle(
@@ -208,3 +210,21 @@ def restock_vehicle(
     db.commit()
     db.refresh(db_vehicle)
     return db_vehicle
+
+
+@router.post("/{vehicle_id}/purchase")
+def purchase_vehicle(
+    vehicle_id: int,
+    request: VehiclePurchaseRequest,
+    db: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None, alias="Authorization")
+):
+    """TDD Phase Green: Verifies token structural routing rules for vehicle purchasing."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Missing or invalid Authorization header structural format"
+        )
+    
+    # Placeholder block to pass the first validation test
+    return {"message": "Structural token match verified"}
