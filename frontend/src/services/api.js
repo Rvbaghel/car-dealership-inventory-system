@@ -1,66 +1,64 @@
-// 🔌 Centralized API Client Layer 
-// Dynamically switches endpoints based on the deployment execution runtime environment.
+const BASE_URL = 'https://car-dealership-inventory-system-rouge.vercel.app';
 
-const LOCAL_API_URL = 'https://car-dealership-inventory-system-rouge.vercel.app';
-const LIVE_API_URL = 'https://car-dealership-inventory-system-rouge.vercel.app';
-
-// Detect whether Vite is running locally ('development') or in production
-export const BASE_URL = import.meta.env.MODE === 'development' 
-  ? LOCAL_API_URL 
-  : LIVE_API_URL;
-
-/**
- * Reusable Core Request Wrapper to enforce global auth tokens and JSON headers.
- */
-async function request(endpoint, options = {}) {
-  const url = `${BASE_URL}${endpoint}`;
-  
-  // Set default JSON headers
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
-
-  // Automatically inject the JWT token from localStorage if the user is logged in
+// Helper function to dynamically append authorization headers
+const getHeaders = (isJson = true) => {
   const token = localStorage.getItem('token');
+  const headers = {};
+  
+  if (isJson) {
+    headers['Content-Type'] = 'application/json';
+  }
+  
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`; // 🟢 Inject the security token here
   }
+  
+  return headers;
+};
 
-  const config = {
-    ...options,
-    headers,
-  };
-
-  // Convert body payload to standard JSON strings automatically if provided
-  if (config.body && typeof config.body === 'object') {
-    config.body = JSON.stringify(config.body);
+const handleResponse = async (requestPromise) => {
+  const res = await requestPromise;
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.clear(); // Clear bad/expired sessions
+    }
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.detail || 'Network response error');
   }
+  return res.json();
+};
 
-  const response = await fetch(url, config);
-
-  // If request hits validation errors or expired tokens, throw clean debug details
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `HTTP Error: ${response.status}`);
-  }
-
-  // Check if response is empty (e.g., 204 No Content)
-  if (response.status === 204) return null;
-
-  return response.json();
-}
-
-// 🌐 Structured Domain Endpoint Routing Bundles
 export const api = {
   auth: {
-    login: (credentials) => request('/api/auth/login', { method: 'POST', body: credentials }),
-    register: (userData) => request('/api/auth/register', { method: 'POST', body: userData }),
+    register: (data) => handleResponse(fetch(`${BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })),
   },
   vehicles: {
-    getAll: () => request('/api/vehicles', { method: 'GET' }),
-    create: (vehicleData) => request('/api/vehicles', { method: 'POST', body: vehicleData }),
-    update: (id, vehicleData) => request(`/api/vehicles/${id}`, { method: 'PUT', body: vehicleData }),
-    delete: (id) => request(`/api/vehicles/${id}`, { method: 'DELETE' }),
-  }
+    getAll: () => handleResponse(fetch(`${BASE_URL}/api/vehicles`, {
+      headers: getHeaders(false) 
+    })),
+    create: (data) => handleResponse(fetch(`${BASE_URL}/api/vehicles`, {
+      method: 'POST',
+      headers: getHeaders(true),
+      body: JSON.stringify(data)
+    })),
+    update: (id, data) => handleResponse(fetch(`${BASE_URL}/api/vehicles/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(true),
+      body: JSON.stringify(data)
+    })),
+    delete: (id) => handleResponse(fetch(`${BASE_URL}/api/vehicles/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(false)
+    })),
+    // 🟢 Fix: Update to pass raw JSON matching the backend's VehiclePurchaseRequest model
+    purchase: (id, quantityRequested) => handleResponse(fetch(`${BASE_URL}/api/vehicles/${id}/purchase`, {
+      method: 'POST',
+      headers: getHeaders(true), // Content-Type: application/json + Bearer token
+      body: JSON.stringify({ quantity: quantityRequested }) 
+    }))
+  } 
 };
