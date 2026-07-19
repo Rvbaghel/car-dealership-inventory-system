@@ -79,25 +79,34 @@ The UI uses a custom **Tailwind CSS v4** theme defined via the `@theme` directiv
 
 ## 📁 Project Structure
 
+
 ```
 car-dealership-inventory-system/
-├── frontend/
+├── frontend/                  # React UI Client Core
 │   ├── src/
-│   │   ├── services/
-│   │   │   └── api.js          # Centralized API service wrapper
+│   │   ├── components/        # Reusable UI layout blocks (CartDrawer, VehicleCard, VehicleModal)
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx # Global authentication state
+│   │   │   └── AuthContext.jsx # Global user session & state manager hook
 │   │   ├── pages/
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   └── Dashboard.jsx
-│   │   └── index.css           # Tailwind v4 theme config
-│   └── vite.config.js
-├── backend/
-│   ├── main.py                 # FastAPI entrypoint
-│   ├── models/                 # SQLAlchemy models
-│   └── routes/                 # API route handlers
-└── vercel.json                 # Monorepo deployment configuration
+│   │   │   ├── Login.jsx       # Dealership access gateway
+│   │   │   ├── Register.jsx    # User creation engine
+│   │   │   └── Dashboard.jsx   # Live inventory queries, filters & aggregate metrics
+│   │   ├── services/
+│   │   │   └── api.js          # Centralized network wrappers using absolute relative path hooks
+│   │   └── index.css          # Premium Tailwind CSS v4 custom typography and luxury colors configuration
+│   └── vite.config.js         # Client builder settings
+├── backend/                   # FastAPI Web Engine Core
+│   ├── app/                   # Tiered architecture block
+│   │   ├── controllers/       # Route request endpoints handlers
+│   │   ├── entities/          # Core definitions/DB data shapes
+│   │   ├── repositories/      # Database Direct Operations Layer (SQL Access Engine)
+│   │   ├── security/          # Security middlewares & token generation schemes
+│   │   ├── services/          # Pure business logic core operations
+│   │   ├── config.py          # Environment parameter parsing engine
+│   │   └── main.py            # FastAPI service pipeline initialization target
+│   ├── requirements.txt       # Core Python app library dependencies
+│   └── .env                   # Deployment secrets (JWT salt, cloud cluster strings, admin seed keys)
+└── vercel.json                # Multi-service monorepo edge routing profile blueprint
 ```
 
 ---
