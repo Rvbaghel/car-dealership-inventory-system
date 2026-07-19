@@ -219,12 +219,24 @@ def purchase_vehicle(
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None, alias="Authorization")
 ):
-    """TDD Phase Green: Verifies token structural routing rules for vehicle purchasing."""
+    """TDD Phase 2 Green: Enforces inventory checks to block overselling."""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Missing or invalid Authorization header structural format"
         )
     
-    # Placeholder block to pass the first validation test
-    return {"message": "Structural token match verified"}
+    # Locate the car in the database
+    db_vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not db_vehicle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
+        
+    # Check if we have enough stock available
+    if db_vehicle.quantity < request.quantity:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Insufficient inventory stock available to complete purchase"
+        )
+    
+    # Placeholder return for now to pass Test Case #2
+    return {"message": "Stock check passed"}
