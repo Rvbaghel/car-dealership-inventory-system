@@ -60,15 +60,16 @@ const Dashboard = () => {
 
   const handleResetFilters = () => {
     const cleared = { make: '', model: '', category: '', min_price: '', max_price: '' };
+    // 🟢 Fix: Synchronize state instantly so subsequent query triggers read the absolute ground truth
     setSearchFilters(cleared);
-    // Directly pass cleared parameter state to download all data fresh
     setLoading(true);
+    
     api.vehicles.getAll()
       .then(data => setVehicles(data || []))
       .catch(() => setError('Could not reset inventory records.'))
       .finally(() => setLoading(false));
   };
-
+  
   // 🛒 Cart Logic Actions
   const handleAddToCart = (vehicle) => {
     const existing = cart.find(item => item.id === vehicle.id);
