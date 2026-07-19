@@ -24,34 +24,26 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // 🔑 Global Login Handler
-  const login = async (username, password) => {
+  // 🔑 Updated Global Login Handler inside AuthContext.jsx to match standard JSON payloads
+  const login = async (email, password) => {
     setLoading(true);
     try {
-      // Form data parsing depending on your backend authentication format
-      // If your FastAPI uses standard OAuth2 Password Bearer, it expects form data/URL encoded parameters:
-      const formData = new URLSearchParams();
-      formData.append('username', username);
-      formData.append('password', password);
-
-      // Make the login API call
-      const data = await fetch(`${import.meta.env.MODE === 'development' ? 'http://127.0.0.1:8000' : 'https://car-dealership-inventory-system-rouge.vercel.app'}/api/auth/login`, {
+      // 🟢 Update: Switch from form-urlencoded data to a clean backend-ready JSON call
+      const data = await fetch(`https://car-dealership-inventory-system-rouge.vercel.app/api/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password }) // Match backend parameters exactly
       }).then(res => {
-        if (!res.ok) throw new Error('Invalid credentials');
+        if (!res.ok) throw new Error('Invalid email or password');
         return res.json();
       });
 
       // Save credentials to localStorage
       localStorage.setItem('token', data.access_token);
       
-      // Decrypt/Parse details from the token payload, or set base user profile info
-      // Since our backend sets the role, we create a clean base object profile
       const userProfile = {
-        username: username,
-        role: username.toLowerCase() === 'admin' ? 'ADMIN' : 'USER' // Quick fallback fallback parsing
+        email: email,
+        role: email.toLowerCase().includes('admin') ? 'ADMIN' : 'USER'
       };
 
       localStorage.setItem('user', JSON.stringify(userProfile));
@@ -63,7 +55,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
   // 🚪 Global Logout Handler
   const logout = () => {
     localStorage.removeItem('token');

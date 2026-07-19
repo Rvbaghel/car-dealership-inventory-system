@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { KeyRound, User, AlertCircle, Loader2 } from 'lucide-react';
+import { KeyRound, Mail, AlertCircle, Loader2 } from 'lucide-react';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,9 +18,10 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      // 🟢 Automatically invokes centralized Context API routing
-      await login(username, password);
-      navigate('/');
+      // Pass email right down to the auth state machine
+      await login(email, password);
+      // 🚀 Redirect straight onto the private dashboard upon success!
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err.message || 'Authentication failed. Please check your credentials.');
     } finally {
@@ -41,11 +42,10 @@ const Login = () => {
             Welcome Back
           </h2>
           <p className="mt-2 text-sm text-slate-500">
-            Sign in to manage your inventory metrics
+            Sign in using your dealership email account
           </p>
         </div>
 
-        {/* Dynamic Alert Banner */}
         {error && (
           <div className="mb-6 flex items-start gap-3 rounded-xl bg-red-50 p-4 text-sm text-red-700 border border-red-100 animate-fade-in">
             <AlertCircle className="h-5 w-5 shrink-0 text-red-500 mt-0.5" />
@@ -56,19 +56,19 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Username
+              Email Address
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <User className="h-5 w-5" />
+                <Mail className="h-5 w-5" />
               </span>
               <input
-                type="text"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-10 pr-4 text-slate-900 placeholder-slate-400 shadow-sm transition-all focus:border-[--color-brand-secondary] focus:outline-none focus:ring-2 focus:ring-blue-100"
-                placeholder="Enter username"
+                placeholder="you@dealership.com"
               />
             </div>
           </div>
