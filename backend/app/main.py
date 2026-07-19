@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from sqlalchemy import text  # Standard SQL wrapper to target internal tables
+from fastapi.middleware.cors import CORSMiddleware # 🟢 Imported cleanly
+from sqlalchemy import text 
 from app.config import engine, Base, SessionLocal
 from app.controllers import auth_controller
 from app.entities.user_entity import UserEntity
 from app.security.jwt_handler import SecurityUtils
 from app.controllers.vehicle_controller import router as vehicle_router
 from app.config import settings
+
 def seed_admin_user():
     db = SessionLocal()
     try:
@@ -28,14 +30,14 @@ def seed_admin_user():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    
-   # Generates all missing tables and columns cleanly on startup
+    # Generates all missing tables and columns cleanly on startup
     Base.metadata.create_all(bind=engine)
     
     # Executes database seeding routines
     seed_admin_user()
     yield
 
+# 🟢 1. Initialize the FastAPI instance first!
 app = FastAPI(
     title="Car Dealership Inventory System",
     description="Java-style Architecture Full-Stack Assessment API",
@@ -43,8 +45,24 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# 🟢 2. Enforce the CORS policy setup right after app definition
+origins = [
+    "http://localhost:5173",      # Local React/Vite development server
+    "http://127.0.0.1:5173",    
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,           # Connects cleanly to our React client
+    allow_credentials=True,
+    allow_methods=["*"],             
+    allow_headers=["*"],             
+)
+
+# 🟢 3. Mount all domain routing modules smoothly
 app.include_router(auth_controller.router)
 app.include_router(vehicle_router)
+
 @app.get("/")
 def read_root():
     return {"message": "Hello World - Car Dealership Inventory API is Live!"}

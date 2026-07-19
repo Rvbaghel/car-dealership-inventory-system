@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, User, Mail, Lock, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
+// 🟢 Import your centralized network system wrapper
+import { api } from '../services/api';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -18,21 +20,13 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${import.meta.env.MODE === 'development' ? 'http://127.0.0.1:8000' : 'https://car-dealership-inventory-system-rouge.vercel.app'}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || 'Registration failed.');
-      }
+      // 🟢 Use the centralized api wrapper clean execution block
+      await api.auth.register({ username, email, password });
 
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Registration failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -127,16 +121,16 @@ const Register = () => {
           </div>
 
           <button
-  type="submit"
-  disabled={isSubmitting || success}
-  className="flex w-full items-center justify-center rounded-xl bg-blue-700 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-70 shadow-md cursor-pointer"
->
-  {isSubmitting ? (
-    <Loader2 className="h-5 w-5 animate-spin text-white" />
-  ) : (
-    <span className="text-white">Create Account</span>
-  )}
-</button>
+            type="submit"
+            disabled={isSubmitting || success}
+            className="flex w-full items-center justify-center rounded-xl bg-blue-700 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-70 shadow-md cursor-pointer"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-5 w-5 animate-spin text-white" />
+            ) : (
+              <span className="text-white">Create Account</span>
+            )}
+          </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-slate-500">

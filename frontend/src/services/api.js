@@ -1,7 +1,7 @@
 // 🔌 Centralized API Client Layer 
 // Dynamically switches endpoints based on the deployment execution runtime environment.
 
-const LOCAL_API_URL = 'http://127.0.0.1:8000';
+const LOCAL_API_URL = 'https://car-dealership-inventory-system-rouge.vercel.app';
 const LIVE_API_URL = 'https://car-dealership-inventory-system-rouge.vercel.app';
 
 // Detect whether Vite is running locally ('development') or in production
