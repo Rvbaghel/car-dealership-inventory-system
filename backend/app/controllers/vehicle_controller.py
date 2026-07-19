@@ -172,6 +172,7 @@ def delete_vehicle(
     #return message
     return {"message": "Vehicle deleted successfully"}
 
+#testing is done all thing perfectly works 
 @router.post("/{vehicle_id}/restock", status_code=status.HTTP_200_OK)
 def restock_vehicle(
     vehicle_id: int,
