@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
-
+from app.security.jwt_handler import SecurityUtils # Adjust this import if your file is named differently
 from app.main import app
 from app.config import Base, get_db  # Imported get_db to fix NameError boundary crashes
 
@@ -63,3 +63,29 @@ def client(db_session):
         # Restore original production session factories and clear overrides
         main_module.SessionLocal = original_session_local
         app.dependency_overrides.clear()
+
+@pytest.fixture
+def admin_client(client):
+    """Fixture that returns a test client authenticated as an ADMIN."""
+    # Pass arguments directly matching your security layer signature
+    token = SecurityUtils.generate_access_token("1", "ADMIN")
+    client.headers = {"Authorization": f"Bearer {token}"}
+    return client
+
+@pytest.fixture
+def user_client(client):
+    """Fixture that returns a test client authenticated as a standard USER."""
+    # Pass arguments directly matching your security layer signature
+    token = SecurityUtils.generate_access_token("2", "USER")
+    client.headers = {"Authorization": f"Bearer {token}"}
+    return client
+    
+@pytest.fixture
+def test_db_vehicle(db_session):
+    """Fixture to create a temporary test vehicle in the DB if you don't have one yet."""
+    from app.entities.vehicle_entity import Vehicle
+    vehicle = Vehicle(make="Ford", model="Explorer", category="SUV", price=40000, quantity=8)
+    db_session.add(vehicle)
+    db_session.commit()
+    db_session.refresh(vehicle)
+    return vehicle        

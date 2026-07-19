@@ -5,6 +5,7 @@ from app.entities.vehicle_entity import Vehicle, VehicleCreateRequest
 from app.security.jwt_handler import SecurityUtils
 from typing import Optional
 from pydantic import BaseModel
+
 router = APIRouter(prefix="/api/vehicles", tags=["Vehicle Controller Layer"])
 
 class VehicleRestockRequest(BaseModel):
@@ -171,19 +172,38 @@ def delete_vehicle(
     #return message
     return {"message": "Vehicle deleted successfully"}
 
-@router.post("/{vehicle_id}/restock")
+@router.post("/{vehicle_id}/restock", status_code=status.HTTP_200_OK)
 def restock_vehicle(
     vehicle_id: int,
     request: VehicleRestockRequest,
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None, alias="Authorization")
 ):
-    """TDD Phase 1 Green: Enforces structural authorization formatting rules for restocking."""
+    """Happy Path Entrypoint: Authenticates ADMIN role and increments vehicle inventory stock."""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Missing or invalid Authorization header structural format"
         )
     
-    # Placeholder return just to satisfy the authentication structural check for Test 1
-    return {"message": "Authenticated successfully"}
+    token = authorization.split(" ")[1]
+    payload = SecurityUtils.verify_access_token(token)
+    
+    # Secure role verification block
+    if payload.get("role") != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrative privileges required to restock inventory"
+        )
+
+    # Search for the vehicle in the database
+    db_vehicle = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
+    if not db_vehicle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found")
+
+    # Increment the quantity
+    db_vehicle.quantity += request.quantity
+
+    db.commit()
+    db.refresh(db_vehicle)
+    return db_vehicle
