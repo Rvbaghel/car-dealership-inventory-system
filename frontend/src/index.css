@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* 🎨 Tailwind v4 Premium Corporate Light Theme Configuration */
+@theme {
+  --color-brand-bg: #f8fafc;        /* Off-white ultra-clean background (Slate 50) */
+  --color-brand-card: #ffffff;      /* Pure white card containers */
+  --color-brand-primary: #1e40af;   /* Premium Royal Blue (Blue 800) */
+  --color-brand-secondary: #0284c7; /* Vibrant Sky Blue accent (Sky 600) */
+  --color-brand-text: #0f172a;      /* Deep Slate text (Slate 900) */
+  --color-brand-border: #e2e8f0;    /* Soft clean borders (Slate 200) */
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-bg);
+    color: var(--color-brand-text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
