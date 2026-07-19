@@ -24,19 +24,12 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // 🔑 Updated Global Login Handler inside AuthContext.jsx to match standard JSON payloads
+  // 🔑 Global Login Handler utilizing the unified API service
   const login = async (email, password) => {
     setLoading(true);
     try {
-      // 🟢 Update: Switch from form-urlencoded data to a clean backend-ready JSON call
-      const data = await fetch(`https://car-dealership-inventory-system-rouge.vercel.app/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: password }) // Match backend parameters exactly
-      }).then(res => {
-        if (!res.ok) throw new Error('Invalid email or password');
-        return res.json();
-      });
+      // 🟢 FIXED: Switched from a hardcoded manual fetch to our updated api handler
+      const data = await api.auth.login({ email, password });
 
       // Save credentials to localStorage
       localStorage.setItem('token', data.access_token);
@@ -55,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
   // 🚪 Global Logout Handler
   const logout = () => {
     localStorage.removeItem('token');
