@@ -219,7 +219,7 @@ def purchase_vehicle(
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None, alias="Authorization")
 ):
-    """TDD Phase 2 Green: Enforces inventory checks to block overselling."""
+    """TDD Phase 3 Green: Finalized happy path that processes transactions and decrements inventory."""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
@@ -238,5 +238,9 @@ def purchase_vehicle(
             detail="Insufficient inventory stock available to complete purchase"
         )
     
-    # Placeholder return for now to pass Test Case #2
-    return {"message": "Stock check passed"}
+    # Decrement the stock quantity
+    db_vehicle.quantity -= request.quantity
+
+    db.commit()
+    db.refresh(db_vehicle)
+    return db_vehicle
