@@ -208,6 +208,51 @@ This project was built with end-to-end assistance from **Gemini** as an AI devel
 * **Production DevOps & Orchestration Infrastructure:** Troubleshooting live environment crashes, diagnosing a structural `vercel.json` entrypoint pathing mismatch causing backend `500` server responses, and ensuring mandatory system keys (`DATABASE_URL`, `JWT_SECRET_KEY`, `ADMIN_SEED_PASSWORD`) were cleanly configured inside Vercel.
 * **Premium Theme Engineering:** Collaborating on a completely refreshed Tailwind CSS v4 `@theme` configuration structure to transform the UI from a baseline layout into a high-contrast, dark-slate "luxury dealership" interface.
 
+## 📸 Application in Action (Visual Walkthrough)
+
+Here is a comprehensive visual breakdown of all 7 key functional areas of the live application, mapping out the full end-to-end customer and manager workflows.
+
+---
+
+### 1. 🔒 Authentication Portal (Sign In)
+The main entry point for registered dealership accounts, featuring secure client-side form validations and global token session binding.
+![Sign In Gateway](./Screenshot/login.PNG)
+
+---
+
+### 2. 📝 New Account Creation (Register)
+The user registration layout allows normal users to instantly register profiles with custom passwords containing complex metrics.
+![Account Registration](./Screenshot/registere.PNG)
+
+---
+
+### 3. 📊 Main Inventory Grid & Live Fleet View
+The customer-facing product dashboard showing the complete active fleet inventory list fetched directly from the Neon PostgreSQL cloud database.
+![Main Vehicles Catalog](./Screenshot/vehicles.PNG)
+
+---
+
+### 4. 🎯 Advanced Multi-Field Search & Live Filters
+Demonstrating the asynchronous dynamic fleet query engine in action, using `URLSearchParams` to refine inventory lists instantly by Make, Model, and Price parameters.
+![Dynamic Filter System](./Screenshot/dashboard_filter.PNG)
+
+---
+
+### 🛒 5. Interactive Customer Shopping Cart
+The sidebar customer cart drawer updating item counts instantly while strictly tracking system quantity maximums.
+![Reactive Shopping Cart](./Screenshot/cart.PNG)
+
+---
+
+### 👑 6. Elevated Manager Workspace (Admin Controls)
+The administrative portal layout loaded exclusively for `ADMIN` permissions, revealing protected action keys.
+![Manager Command Controls](./Screenshot/admin_updatess.PNG)
+
+---
+
+### ➕ 7. Administrative Record Management Panel
+The full CRUD vehicle configuration entry module, enabling managers to smoothly submit fresh inventory entries, append specifications, or remove assets.
+![Vehicle Management Module](./Screenshot/admit_addrecords.PNG)
 ### Reflection & Developer Contribution
 AI served as a **high-velocity collaborative peer** throughout development. Rather than acting as a simple code generator, it functioned as a real-time debugging terminal partner. The project required intense live integration testing, moving from local SQLite development into live cloud deployment pipelines with a Neon Serverless PostgreSQL cluster. 
 
