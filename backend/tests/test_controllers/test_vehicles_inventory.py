@@ -22,3 +22,22 @@ def test_restock_vehicle_requires_authentication(client):
         headers=bad_headers
     )
     assert response_bad_format.status_code == status.HTTP_401_UNAUTHORIZED
+
+def test_restock_vehicle_success_increases_quantity_as_admin(admin_client, test_db_vehicle):
+    """
+    TDD Test 2 (RED): Enforces that an authenticated ADMIN can successfully 
+    restock a vehicle, incrementing its stock quantity in the database.
+    """
+    vehicle_id = test_db_vehicle.id
+    # Let's say starting quantity is 8 (based on our previous DB items)
+    initial_quantity = test_db_vehicle.quantity 
+    restock_payload = {"quantity": 5}
+    
+    # We use admin_client which automatically provides a valid ADMIN token
+    response = admin_client.post(f"/api/vehicles/{vehicle_id}/restock", json=restock_payload)
+    
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    
+    # Verify the stock increments accurately in the returned JSON state
+    assert data["quantity"] == initial_quantity + 5    
