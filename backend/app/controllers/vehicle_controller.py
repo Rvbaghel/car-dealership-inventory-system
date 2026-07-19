@@ -4,8 +4,11 @@ from app.config import get_db
 from app.entities.vehicle_entity import Vehicle, VehicleCreateRequest
 from app.security.jwt_handler import SecurityUtils
 from typing import Optional
-
+from pydantic import BaseModel
 router = APIRouter(prefix="/api/vehicles", tags=["Vehicle Controller Layer"])
+
+class VehicleRestockRequest(BaseModel):
+    quantity: int
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_vehicle(
@@ -167,3 +170,20 @@ def delete_vehicle(
     db.commit()
     #return message
     return {"message": "Vehicle deleted successfully"}
+
+@router.post("/{vehicle_id}/restock")
+def restock_vehicle(
+    vehicle_id: int,
+    request: VehicleRestockRequest,
+    db: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None, alias="Authorization")
+):
+    """TDD Phase 1 Green: Enforces structural authorization formatting rules for restocking."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Missing or invalid Authorization header structural format"
+        )
+    
+    # Placeholder return just to satisfy the authentication structural check for Test 1
+    return {"message": "Authenticated successfully"}
