@@ -197,6 +197,9 @@ implementation."
 
 "I have completed manual end-to-end QA testing for the `POST /api/vehicles/{vehicle_id}/purchase` endpoint using live Postman client tokens. Transactions accurately deduct stock items, boundary checks restrict excess orders, and permissions behave correctly for all authorized roles."
 
+## Prompt: Environment Configuration and Credential Hardening
+
+"I have refactored the database initialization configuration layers to extract hardcoded administrative seed passwords out of the codebase logic. Authentication profiles are now cleanly injected via an externalized `.env` file wrapper."
 
 
 
