@@ -35,12 +35,17 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })),
+    // 🟢 FIXED: Added missing login action module matching your FastAPI backend
+    login: (data) => handleResponse(fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })),
   },
   vehicles: {
     getAll: () => handleResponse(fetch(`${BASE_URL}/api/vehicles`, {
       headers: getHeaders(false) 
     })),
-    // 🟢 Add this dedicated search function matching your backend query inputs
     search: (filters) => {
       const params = new URLSearchParams();
       if (filters.make) params.append('make', filters.make);
