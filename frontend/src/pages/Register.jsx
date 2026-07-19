@@ -127,16 +127,16 @@ const Register = () => {
           </div>
 
           <button
-            type="submit"
-            disabled={isSubmitting || success}
-            className="flex w-full items-center justify-center rounded-xl bg-[--color-brand-primary] py-3 text-sm font-semibold text-white transition-all hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-70 shadow-md cursor-pointer"
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              'Create Account'
-            )}
-          </button>
+  type="submit"
+  disabled={isSubmitting || success}
+  className="flex w-full items-center justify-center rounded-xl bg-blue-700 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-70 shadow-md cursor-pointer"
+>
+  {isSubmitting ? (
+    <Loader2 className="h-5 w-5 animate-spin text-white" />
+  ) : (
+    <span className="text-white">Create Account</span>
+  )}
+</button>
         </form>
 
         <p className="mt-8 text-center text-sm text-slate-500">
