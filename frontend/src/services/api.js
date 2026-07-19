@@ -40,6 +40,20 @@ export const api = {
     getAll: () => handleResponse(fetch(`${BASE_URL}/api/vehicles`, {
       headers: getHeaders(false) 
     })),
+    // 🟢 Add this dedicated search function matching your backend query inputs
+    search: (filters) => {
+      const params = new URLSearchParams();
+      if (filters.make) params.append('make', filters.make);
+      if (filters.model) params.append('model', filters.model);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.min_price) params.append('min_price', filters.min_price);
+      if (filters.max_price) params.append('max_price', filters.max_price);
+
+      return handleResponse(fetch(`${BASE_URL}/api/vehicles/search?${params.toString()}`, {
+        method: 'GET',
+        headers: getHeaders(false)
+      }));
+    },
     create: (data) => handleResponse(fetch(`${BASE_URL}/api/vehicles`, {
       method: 'POST',
       headers: getHeaders(true),
@@ -54,10 +68,9 @@ export const api = {
       method: 'DELETE',
       headers: getHeaders(false)
     })),
-    // 🟢 Fix: Update to pass raw JSON matching the backend's VehiclePurchaseRequest model
     purchase: (id, quantityRequested) => handleResponse(fetch(`${BASE_URL}/api/vehicles/${id}/purchase`, {
       method: 'POST',
-      headers: getHeaders(true), // Content-Type: application/json + Bearer token
+      headers: getHeaders(true),
       body: JSON.stringify({ quantity: quantityRequested }) 
     }))
   } 

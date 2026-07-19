@@ -4,28 +4,42 @@ import { api } from '../services/api';
 import VehicleCard from '../components/VehicleCard';
 import VehicleModal from '../components/VehicleModal';
 import CartDrawer from '../components/CartDrawer';
-import { PlusCircle, LogOut, Car, ShieldAlert, Layers, BarChart3, Loader2, ShoppingCart } from 'lucide-react';
+import { PlusCircle, LogOut, Car, ShieldAlert, Layers, BarChart3, Loader2, ShoppingCart, Search, RefreshCw, SlidersHorizontal } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, logout, isAdmin } = useAuth();
   
-  // App States
+  // App Core States
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Cart & Drawer States
+  // 🟢 Search Filtering States
+  const [searchFilters, setSearchFilters] = useState({
+    make: '',
+    model: '',
+    category: '',
+    min_price: '',
+    max_price: ''
+  });
+
+  // Cart & Modals States
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-
-  // Administrative Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
 
-  const fetchInventory = async () => {
+  // 🟢 Main Fetch & Search Handler Execution Block
+  const fetchInventory = async (isSearching = false) => {
     setLoading(true);
     try {
-      const data = await api.vehicles.getAll();
+      let data;
+      // If any search field contains active input, trigger search routing path
+      if (isSearching && (searchFilters.make || searchFilters.model || searchFilters.category || searchFilters.min_price || searchFilters.max_price)) {
+        data = await api.vehicles.search(searchFilters);
+      } else {
+        data = await api.vehicles.getAll();
+      }
       setVehicles(data || []);
     } catch (err) {
       setError('Could not establish a clean stream with inventory records.');
@@ -38,12 +52,28 @@ const Dashboard = () => {
     fetchInventory();
   }, []);
 
-  // 🛒 Cart Logic 1: Add item to selection list
+  // 🟢 Filter Triggers
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    fetchInventory(true);
+  };
+
+  const handleResetFilters = () => {
+    const cleared = { make: '', model: '', category: '', min_price: '', max_price: '' };
+    setSearchFilters(cleared);
+    // Directly pass cleared parameter state to download all data fresh
+    setLoading(true);
+    api.vehicles.getAll()
+      .then(data => setVehicles(data || []))
+      .catch(() => setError('Could not reset inventory records.'))
+      .finally(() => setLoading(false));
+  };
+
+  // 🛒 Cart Logic Actions
   const handleAddToCart = (vehicle) => {
     const existing = cart.find(item => item.id === vehicle.id);
     const dynamicQtyInCart = existing ? existing.cartQuantity : 0;
 
-    // 🛑 Check if user tries to select more than available inventory stock limits
     if (dynamicQtyInCart >= vehicle.quantity) {
       alert(`⚠️ Cannot add more units! Only ${vehicle.quantity} items available in stock.`);
       return;
@@ -54,16 +84,14 @@ const Dashboard = () => {
     } else {
       setCart([...cart, { ...vehicle, cartQuantity: 1 }]);
     }
-    setIsCartOpen(true); // Pop cart layout slide open instantly
+    setIsCartOpen(true);
   };
 
-  // 🛒 Cart Logic 2: Increment/Decrement and stock validation checks
   const handleUpdateCartQty = (id, newQty) => {
     if (newQty <= 0) {
       handleRemoveCartItem(id);
       return;
     }
-
     const item = cart.find(i => i.id === id);
     const liveVehicleRecord = vehicles.find(v => v.id === id);
 
@@ -71,42 +99,31 @@ const Dashboard = () => {
       alert(`🛑 Restricted request! Only ${liveVehicleRecord.quantity} units are available.`);
       return;
     }
-
     setCart(cart.map(i => i.id === id ? { ...i, cartQuantity: newQty } : i));
   };
 
-  // 🛒 Cart Logic 3: Delete order item out of selection list
   const handleRemoveCartItem = (id) => {
     setCart(cart.filter(item => item.id !== id));
   };
 
-  // 🛒 Cart Logic 4: Final Purchase confirmation & DB stock adjustments
-  // 🛒 Force dynamic POST execution mapping directly inside Dashboard.jsx
   const handleCheckoutPurchase = async () => {
     if (!window.confirm('💳 Confirm Purchase? This will instantly place your order and secure your cars!')) {
       return;
     }
-
     try {
-      // Execute the purchase sequentially across the custom purchase endpoint
       for (const cartItem of cart) {
-        // 🟢 Direct call to your backend purchase module to guarantee a POST request
         await api.vehicles.purchase(cartItem.id, cartItem.cartQuantity);
       }
-
-      // 🏆 Success actions! Clear cart array, slide close drawer layout, refresh inventory view
       alert('🎉 Success! Your purchase order went through. The fleet database quantity has been updated.');
       setCart([]); 
       setIsCartOpen(false);
-      
-      // Force inventory state hydration layout
       fetchInventory(); 
     } catch (err) {
-      alert(err.message || 'Transaction could not be verified by server protocols.');
+      alert(err.message || 'Transaction could not be completed.');
     }
   };
 
-  // ➕/✏️ Admin Handlers
+  // ➕/✏️ Administrative Handlers
   const handleSaveVehicle = async (formData) => {
     try {
       if (selectedVehicle) {
@@ -139,9 +156,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         
-        {/* Top Header */}
+        {/* Top Header Layout */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div>
             <div className="flex items-center gap-2">
@@ -164,7 +181,7 @@ const Dashboard = () => {
                 <ShoppingCart className="h-4 w-4 text-blue-700" />
                 <span>View Cart</span>
                 {cart.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center animate-bounce shadow-sm">
+                  <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center shadow-sm">
                     {cart.reduce((sum, i) => sum + i.cartQuantity, 0)}
                   </span>
                 )}
@@ -189,7 +206,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Analytics Infrastructure */}
+        {/* Analytics Section */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="rounded-xl bg-blue-50 p-3 text-blue-600"><Car className="h-6 w-6" /></div>
@@ -214,11 +231,83 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Main Grid Card Engine */}
+        {/* 🟢 NEW: Integrated Multi-Field Search Form Controller */}
+        <form onSubmit={handleSearchSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-slate-800 border-b border-slate-100 pb-2.5">
+            <SlidersHorizontal className="h-4 w-4 text-slate-400" />
+            <h3 className="text-sm font-bold tracking-tight uppercase text-slate-500">Search and Filter Inventory</h3>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            <input
+              type="text"
+              placeholder="Filter Make (e.g., Tesla)"
+              value={searchFilters.make}
+              onChange={(e) => setSearchFilters({ ...searchFilters, make: e.target.value })}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none bg-slate-50/50"
+            />
+            <input
+              type="text"
+              placeholder="Filter Model"
+              value={searchFilters.model}
+              onChange={(e) => setSearchFilters({ ...searchFilters, model: e.target.value })}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none bg-slate-50/50"
+            />
+            <input
+              type="text"
+              placeholder="Filter Category"
+              value={searchFilters.category}
+              onChange={(e) => setSearchFilters({ ...searchFilters, category: e.target.value })}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none bg-slate-50/50"
+            />
+            <input
+              type="number"
+              placeholder="Min Price ($)"
+              value={searchFilters.min_price}
+              onChange={(e) => setSearchFilters({ ...searchFilters, min_price: e.target.value })}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none bg-slate-50/50"
+            />
+            <input
+              type="number"
+              placeholder="Max Price ($)"
+              value={searchFilters.max_price}
+              onChange={(e) => setSearchFilters({ ...searchFilters, max_price: e.target.value })}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none bg-slate-50/50"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-1 border-t border-slate-100/60">
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 cursor-pointer"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Reset</span>
+            </button>
+            <button
+              type="submit"
+              className="flex items-center gap-1 rounded-xl bg-blue-700 px-5 py-2 text-xs font-semibold text-white transition-all hover:bg-blue-800 shadow-md cursor-pointer"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span>Query Fleet</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Main Grid Render Engine */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="text-sm font-semibold">Synchronizing matrix...</p>
+            <p className="text-sm font-semibold">Filtering collection records...</p>
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center text-red-700 font-medium">{error}</div>
+        ) : vehicles.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center">
+            <Car className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+            <h3 className="text-lg font-bold text-slate-900">No matching vehicles found</h3>
+            <p className="text-sm text-slate-400 mt-1">Adjust your filter parameters or hit reset to view full active inventory stock.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -235,7 +324,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Modals and Side Drawers */}
+        {/* Dialog Overlays */}
         <VehicleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveVehicle} vehicle={selectedVehicle} />
         
         <CartDrawer 
