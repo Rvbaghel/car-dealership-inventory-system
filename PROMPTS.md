@@ -124,6 +124,80 @@ implementation."
 
 "I have introduced role authorization claim decoding logic for `DELETE /api/vehicles/:id` inside `app/controllers/vehicle_controller.py` to assert against the `ADMIN` criteria layout maps. Rerunning the test runner checks out cleanly with 5 passing metrics."
 
+## Prompt: Refactor & Secure Vehicle Creation Endpoint (TDD Refactor Phase)
+
+"I have refactored the `POST /api/vehicles` route within `app/controllers/vehicle_controller.py` to decode incoming JWT token payloads. An authorization check was implemented to enforce that only users possessing the `ADMIN` role claim can create new vehicles, returning a `403 Forbidden` for standard `USER` tokens. Live manual data verification via Postman passes cleanly for both role paths."
+
+## Prompt: Refactor & Verify Get All Vehicles Endpoint (TDD Refactor Phase)
+
+"I have verified the `GET /api/vehicles` endpoint within `app/controllers/vehicle_controller.py` using corrected `Authorization` header mapping configuration layout maps. Live data testing via Postman confirms that both authenticated `USER` and `ADMIN` tokens successfully pass verification criteria and receive a 200 OK with the vehicle list."
+
+
+## Prompt: Refactor & Verify Vehicle Search Endpoint (TDD Refactor Phase)
+
+"I have verified the `GET /api/vehicles/search` filtering route within `app/controllers/vehicle_controller.py` under the corrected `Authorization` header map specifications. Live testing with dynamic query string targets returns valid records successfully."
+
+
+## Prompt: Refactor & Secure Vehicle Update Endpoint (TDD Refactor Phase)
+
+"I have refactored the `PUT /api/vehicles/{vehicle_id}` update route within `app/controllers/vehicle_controller.py` to decode token payloads and explicitly enforce the `ADMIN` role requirement. Live validation testing via Postman successfully confirms that standard `USER` tokens return a 403 Forbidden while `ADMIN` tokens process updates flawlessly."
+
+
+## Prompt: Verify Vehicle Deletion Endpoint (TDD Refactor Phase)
+
+"I have verified the `DELETE /api/vehicles/{vehicle_id}` endpoint within `app/controllers/vehicle_controller.py` under the corrected `Authorization` header mapping specifications. Manual testing loops via Postman successfully confirm that role gating rules function perfectly, rejecting standard `USER` requests while permitting administrative inventory deletions."
+
+## Prompt: Write Failing Restock Authentication Test (TDD RED Phase)
+
+"I have written the initial failing TDD test case inside `tests/test_controllers/test_vehicles_inventory.py` to enforce authentication structure matching rules on the restock endpoint. Execution via `python -m pytest` yields a verified RED failure state."
+
+## Prompt: Implement Restock Authentication Gating (TDD GREEN Phase)
+
+"I have implemented the structural token validation layer for `POST /api/vehicles/{vehicle_id}/restock` within `app/controllers/vehicle_controller.py`. Execution via `python -m pytest` now registers as GREEN (1 passed)."
+
+## Prompt: Write Failing Restock Functionality Test (TDD RED Phase)
+
+"I have written the functional payload testing logic inside `tests/test_controllers/test_vehicles_inventory.py` to verify quantity mathematical increment tracking. The test execution confirms a valid RED failure state via a missing fixture error."
+
+## Prompt: Implement Restock Quantity Increments (TDD GREEN Phase)
+
+"I have refactored `tests/conftest.py` with corrected parameter signatures for `admin_client` and implemented the stock addition mathematical logic inside `app/controllers/vehicle_controller.py`. The test suite confirms a successful GREEN execution state."
+
+## Prompt: Complete Restock Verification Suite (TDD GREEN Phase)
+
+"I have finalized the validation test suite inside `tests/test_controllers/test_vehicles_inventory.py` by verifying that standard `USER` tokens are explicitly unauthorized for restock mutations. The full inventory suite executes cleanly under green status (3 passed)."
+
+## Prompt: Write Failing Purchase Authentication Test (TDD RED Phase)
+
+"I have written the initial failing TDD test case inside `tests/test_controllers/test_vehicles_inventory.py` to enforce authentication header mapping on the new purchase endpoint. Running the test registers a valid RED failure state via a 404 response."
+
+## Prompt: Implement Purchase Authentication Gating (TDD GREEN Phase)
+
+"I have implemented the structural token validation layer for `POST /api/vehicles/{vehicle_id}/purchase` within `app/controllers/vehicle_controller.py`. Execution via `python -m pytest` now registers as GREEN (1 passed)."
+
+## Prompt: Write Failing Purchase Stock Boundary Test (TDD RED Phase)
+
+"I have written the validation testing logic inside `tests/test_controllers/test_vehicles_inventory.py` to prevent purchases that exceed current database limits. The test runner yields a clean RED failure state (assert 200 == 400)."
+
+
+## Prompt: Implement Purchase Stock Level Check (TDD GREEN Phase)
+
+"I have implemented the database inventory stock validation check inside `app/controllers/vehicle_controller.py` to intercept out-of-stock requests. Test execution via `python -m pytest` confirms a passing GREEN state (1 passed)."
+
+## Prompt: Write Failing Purchase Decrement Test (TDD RED Phase)
+
+"I have written the functional payload testing logic inside `tests/test_controllers/test_vehicles_inventory.py` to verify mathematical stock subtraction. The test run registers a valid RED failure state via a KeyError."
+
+## Prompt: Finalize Purchase Transaction Decrements (TDD GREEN Phase)
+
+"I have completed the end-to-end implementation for `POST /api/vehicles/{vehicle_id}/purchase` within `app/controllers/vehicle_controller.py`. Full test suite execution confirms an absolute GREEN status across all vectors (6 passed)."
+
+
+## Prompt: Verify and Finalize Vehicle Purchase Architecture
+
+"I have completed manual end-to-end QA testing for the `POST /api/vehicles/{vehicle_id}/purchase` endpoint using live Postman client tokens. Transactions accurately deduct stock items, boundary checks restrict excess orders, and permissions behave correctly for all authorized roles."
+
+
 
 
 
