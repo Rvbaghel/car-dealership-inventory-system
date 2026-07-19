@@ -92,4 +92,21 @@ def test_purchase_vehicle_insufficient_quantity(user_client, test_db_vehicle):
     response = user_client.post(f"/api/vehicles/{vehicle_id}/purchase", json=excess_purchase_payload)
     
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()["detail"] == "Insufficient inventory stock available to complete purchase"         
+    assert response.json()["detail"] == "Insufficient inventory stock available to complete purchase"
+
+def test_purchase_vehicle_success_decreases_quantity(user_client, test_db_vehicle):
+    """
+    TDD Purchase Test 3 (RED): Enforces that a valid purchase request accurately 
+    decrements the vehicle's inventory quantity in the database.
+    """
+    vehicle_id = test_db_vehicle.id
+    initial_quantity = test_db_vehicle.quantity  # Base quantity is 8
+    purchase_payload = {"quantity": 3}
+    
+    response = user_client.post(f"/api/vehicles/{vehicle_id}/purchase", json=purchase_payload)
+    
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    
+    # Mathematical check: 8 - 3 = 5
+    assert data["quantity"] == initial_quantity - 3          
