@@ -1,13 +1,24 @@
 @import "tailwindcss";
 
-/* 🎨 Tailwind v4 Premium Corporate Light Theme Configuration */
+/* 🏎️ Luxury Dealership Premium Theme Configuration */
 @theme {
-  --color-brand-bg: #f8fafc;        /* Off-white ultra-clean background (Slate 50) */
-  --color-brand-card: #ffffff;      /* Pure white card containers */
-  --color-brand-primary: #1e40af;   /* Premium Royal Blue (Blue 800) */
-  --color-brand-secondary: #0284c7; /* Vibrant Sky Blue accent (Sky 600) */
-  --color-brand-text: #0f172a;      /* Deep Slate text (Slate 900) */
-  --color-brand-border: #e2e8f0;    /* Soft clean borders (Slate 200) */
+  /* Layout Architecture */
+  --color-brand-bg: #f8fafc;          /* Off-white ultra-clean background (Slate 50) */
+  --color-brand-card: #ffffff;        /* Pure white card containers */
+  --color-brand-border: #f1f5f9;      /* Extra soft, modern clean borders (Slate 100) */
+  
+  /* Brand Identity Layers */
+  --color-brand-primary: #0f172a;     /* Deep Luxury Slate/Obsidian for high-end contrast (Slate 900) */
+  --color-brand-secondary: #2563eb;   /* Premium Sport Blue accent (Blue 600) */
+  --color-brand-accent: #0284c7;      /* Tech Sky Blue for active interactive triggers (Sky 600) */
+  
+  /* Typography Depth Matrix */
+  --color-brand-text: #1e293b;        /* Polished primary reading layer (Slate 800) */
+  --color-brand-text-muted: #64748b;  /* Subtle descriptor/label layer (Slate 500) */
+
+  /* Functional Status Accents */
+  --color-brand-success: #16a34a;     /* Deep emerald for confirmed checkouts (Green 600) */
+  --color-brand-warning: #ea580c;     /* Rich amber for low stock indicators (Orange 600) */
 }
 
 @layer base {
@@ -16,5 +27,6 @@
     color: var(--color-brand-text);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
