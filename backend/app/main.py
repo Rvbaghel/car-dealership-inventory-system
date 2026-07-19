@@ -6,6 +6,7 @@ from app.controllers import auth_controller
 from app.entities.user_entity import UserEntity
 from app.security.jwt_handler import SecurityUtils
 from app.controllers.vehicle_controller import router as vehicle_router
+from app.config import settings
 def seed_admin_user():
     db = SessionLocal()
     try:
@@ -13,7 +14,7 @@ def seed_admin_user():
         admin = db.query(UserEntity).filter(UserEntity.email == admin_email).first()
         
         if not admin:
-            hashed_pass = SecurityUtils.hash_password("SuperSecureAdminPassword123!")
+            hashed_pass = SecurityUtils.hash_password(settings.ADMIN_SEED_PASSWORD)
             admin_user = UserEntity(
                 username="admin",
                 email=admin_email,

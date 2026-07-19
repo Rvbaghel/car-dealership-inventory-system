@@ -1,5 +1,15 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Settings:
+    # ... your other config settings ...
+    ADMIN_SEED_PASSWORD: str = os.getenv("ADMIN_SEED_PASSWORD", "FallbackSecurePasswordIfEnvMissing123!")
+
+settings = Settings()
 
 # 1. Database file path
 DATABASE_URL = "sqlite:///./local_dealership.db"
